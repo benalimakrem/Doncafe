@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Don Café — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1008;--surface:#261508;--card:#321c0c;--border:#4a2c1a33;
+  --latte:#C9A97A;--gold:#B8872A;--cream:#F7F1E8;--muted:#a07850;
+  --red:#e74c3c;--green:#27ae60;--blue:#3498db;--orange:#e67e22;
+  --text:#f0e8d8;--text2:#c4a882;--text3:#8a6840;
+  --input-bg:#1e1106;--shadow:0 4px 24px rgba(0,0,0,.4);
+}
+body{background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;font-weight:400;min-height:100vh}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:8px}
+#login-screen.hidden{display:none}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:340px;box-shadow:var(--shadow)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo h1{font-size:28px;font-weight:300;color:var(--latte);letter-spacing:.12em}
+.login-logo p{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:6px}
+.form-group input{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Jost',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.form-group input:focus{border-color:var(--latte)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .2s;text-decoration:none}
+.btn-primary{background:var(--gold);color:var(--bg)}
+.btn-primary:hover{background:var(--latte)}
+.btn-full{width:100%;padding:12px}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--latte);color:var(--latte)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#c0392b}
+.btn-success{background:var(--green);color:#fff}
+.login-err{color:var(--red);font-size:12px;margin-top:8px;display:none}
+
+/* ── LAYOUT ── */
+#app{display:none;min-height:100vh}
+#app.visible{display:flex}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:50}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border)}
+.sidebar-logo h2{font-size:18px;font-weight:300;color:var(--latte);letter-spacing:.1em}
+.sidebar-logo p{font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin-top:2px}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 20px;cursor:pointer;color:var(--text2);font-size:13px;transition:all .2s;border-left:2px solid transparent}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{background:var(--card);color:var(--latte);border-left-color:var(--gold)}
+.nav-item .icon{font-size:16px;width:20px;text-align:center}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border)}
+.sidebar-user{font-size:12px;color:var(--text3);margin-bottom:10px}
+.main{margin-left:220px;flex:1;padding:32px;overflow-y:auto;min-height:100vh}
+.page{display:none}
+.page.visible{display:block}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.page-title{font-size:22px;font-weight:400;color:var(--text)}
+.page-title span{color:var(--latte)}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+.stat-num{font-size:32px;font-weight:300;color:var(--gold)}
+.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-top:4px}
+
+/* ── TABLES ── */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{background:var(--surface);padding:12px 16px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:500;border-bottom:1px solid var(--border)}
+td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(201,169,122,.04)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
+.badge-avail{background:rgba(39,174,96,.15);color:#27ae60}
+.badge-unavail{background:rgba(231,76,60,.15);color:#e74c3c}
+.badge-cat{background:rgba(201,169,122,.15);color:var(--latte)}
+.actions{display:flex;gap:6px;align-items:center}
+.price-cell{font-family:'Jost',sans-serif;font-weight:500;color:var(--gold)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;width:480px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-header{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:17px;font-weight:500;color:var(--text)}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1;padding:4px}
+.modal-body{padding:0 24px}
+.modal-footer{padding:20px 24px;display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);margin-bottom:5px;font-weight:500}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Jost',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--latte)}
+.form-group select option{background:var(--card)}
+.form-group textarea{resize:vertical;min-height:72px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+.toggle{width:40px;height:22px;background:var(--border);border-radius:11px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--green)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle.on::after{transform:translateX(18px)}
+
+/* ── SETTINGS ── */
+.settings-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
+.settings-title{font-size:14px;font-weight:500;color:var(--latte);margin-bottom:18px;text-transform:uppercase;letter-spacing:.1em}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{background:var(--red)}
+
+/* ── QR PAGE ── */
+.qr-display{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;max-width:400px}
+.qr-display .qr-frame{background:#fff;border-radius:12px;padding:16px;display:inline-block;margin-bottom:20px}
+.qr-display h3{font-size:18px;color:var(--text);margin-bottom:8px}
+.qr-display p{font-size:13px;color:var(--text2);line-height:1.6}
+.qr-display .url{font-size:12px;color:var(--latte);margin-top:10px;word-break:break-all}
+
+@media(max-width:768px){
+  .sidebar{width:200px}
+  .main{margin-left:200px;padding:20px}
+  .form-row{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .sidebar{transform:translateX(-100%);transition:transform .3s}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo"><h1>Don Café</h1><p>Admin Panel</p></div>
+    <div class="form-group"><label>Username</label><input type="text" id="login-user" value="admin" autocomplete="username"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="login-pass" value="" placeholder="Enter password" autocomplete="current-password"></div>
+    <div id="login-err" class="login-err">Invalid credentials. Try admin / doncafe2025</div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">Sign In →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h2>Don Café</h2><p>Admin Panel</p></div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="icon">📊</span>Dashboard</div>
+      <div class="nav-item" onclick="showPage('items',this)"><span class="icon">🍽</span>Menu Items</div>
+      <div class="nav-item" onclick="showPage('categories',this)"><span class="icon">📂</span>Categories</div>
+      <div class="nav-item" onclick="showPage('qr',this)"><span class="icon">📱</span>QR Code</div>
+      <div class="nav-item" onclick="window.open('/print-cards','_blank')"><span class="icon">🖨</span>Print Cards</div>
+      <div class="nav-item" onclick="showPage('settings',this)"><span class="icon">⚙️</span>Settings</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebar-user">admin</div>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="width:100%">Sign Out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- DASHBOARD -->
+    <div class="page visible" id="page-dashboard">
+      <div class="page-header">
+        <h1 class="page-title">Dashboard <span>Overview</span></h1>
+        <div style="display:flex;gap:8px"><a href="/" target="_blank" class="btn btn-ghost btn-sm">View Menu ↗</a><a href="/print-cards" target="_blank" class="btn btn-ghost btn-sm">Print Cards ↗</a></div>
+      </div>
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Category</th><th>Items</th><th>Available</th></tr></thead>
+        <tbody id="dash-table"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ITEMS -->
+    <div class="page" id="page-items">
+      <div class="page-header">
+        <h1 class="page-title">Menu <span>Items</span></h1>
+        <button class="btn btn-primary btn-sm" onclick="openItemModal()">+ Add Item</button>
+      </div>
+      <div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <select id="filter-cat" onchange="renderItemsTable()" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:Jost,sans-serif;font-size:13px;outline:none">
+          <option value="">All Categories</option>
+        </select>
+        <input type="text" id="filter-search" oninput="renderItemsTable()" placeholder="Search items…"
+          style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:Jost,sans-serif;font-size:13px;outline:none;flex:1;min-width:160px">
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Badge</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="items-table"></tbody></table>
+      </div>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div class="page" id="page-categories">
+      <div class="page-header">
+        <h1 class="page-title">Menu <span>Categories</span></h1>
+        <button class="btn btn-primary btn-sm" onclick="openCatModal()">+ Add Category</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Icon</th><th>Name</th><th>French Name</th><th>Order</th><th>Actions</th></tr></thead>
+        <tbody id="cats-table"></tbody></table>
+      </div>
+    </div>
+
+    <!-- QR -->
+    <div class="page" id="page-qr">
+      <div class="page-header"><h1 class="page-title">QR <span>Code</span></h1></div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+        <div class="qr-display">
+          <div class="qr-frame" id="admin-qr-frame" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center"></div>
+          <h3>Menu QR Code</h3>
+          <p>Customers scan this to open the live menu on their phone.</p>
+          <div class="url" id="admin-qr-url"></div>
+          <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="downloadQR()">Download SVG</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyURL()">Copy URL</button>
+          </div>
+        </div>
+        <div style="flex:1;min-width:240px">
+          <div class="settings-card">
+            <div class="settings-title">How to use</div>
+            <p style="font-size:13px;color:var(--text2);line-height:1.8">
+              1. Download the QR code SVG<br>
+              2. Print it and place on tables<br>
+              3. Customers scan → they see the live menu<br>
+              4. Any changes you make in admin appear instantly<br><br>
+              <strong style="color:var(--latte)">Menu URL:</strong>
+              <code id="qr-menu-url" style="font-size:12px;color:var(--latte);display:block;margin-top:4px;word-break:break-all"></code>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-header"><h1 class="page-title">Café <span>Settings</span></h1></div>
+      <div class="settings-card">
+        <div class="settings-title">Café Information</div>
+        <div class="form-row">
+          <div class="form-group"><label>Café Name</label><input type="text" id="s-name" placeholder="Don Café"></div>
+          <div class="form-group"><label>Phone</label><input type="text" id="s-phone" placeholder="+216 XX XXX XXX"></div>
+        </div>
+        <div class="form-group"><label>Tagline</label><input type="text" id="s-tagline" placeholder="L'art du café…"></div>
+        <div class="form-group"><label>Address</label><input type="text" id="s-address" placeholder="Tunis, Tunisie"></div>
+        <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Settings</button>
+      </div>
+      <div class="settings-card">
+        <div class="settings-title">Change Password</div>
+        <div class="form-row">
+          <div class="form-group"><label>New Password</label><input type="password" id="s-newpass" placeholder="New password"></div>
+          <div class="form-group"><label>Confirm</label><input type="password" id="s-confirmpass" placeholder="Confirm password"></div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="changePassword()">Change Password</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ITEM MODAL -->
+<div class="modal-overlay" id="item-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="item-modal-title">Add Item</span>
+      <button class="modal-close" onclick="closeModal('item-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="item-id">
+      <div class="form-row">
+        <div class="form-group"><label>Name (EN) *</label><input type="text" id="item-name" placeholder="Espresso"></div>
+        <div class="form-group"><label>French Name</label><input type="text" id="item-name-fr" placeholder="Espresso"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Arabic Name</label><input type="text" id="item-name-ar" placeholder="إسبريسو" dir="rtl"></div>
+        <div class="form-group"><label>Category *</label>
+          <select id="item-cat"></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Description</label><textarea id="item-desc" placeholder="Short description…"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>Price (TND) *</label><input type="number" id="item-price" step="0.5" min="0" placeholder="0.000"></div>
+        <div class="form-group"><label>Badge</label>
+          <select id="item-badge">
+            <option value="">None</option>
+            <option>Popular</option><option>Maison</option><option>Signature</option><option>Spécial</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Sort Order</label><input type="number" id="item-order" placeholder="0" min="0"></div>
+      <div class="toggle-row">
+        <span style="font-size:13px;color:var(--text2)">Available on menu</span>
+        <div class="toggle on" id="item-avail-toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('item-modal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveItem()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY MODAL -->
+<div class="modal-overlay" id="cat-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="cat-modal-title">Add Category</span>
+      <button class="modal-close" onclick="closeModal('cat-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cat-id">
+      <div class="form-row">
+        <div class="form-group"><label>Name (EN) *</label><input type="text" id="cat-name" placeholder="Hot Drinks"></div>
+        <div class="form-group"><label>French Name</label><input type="text" id="cat-name-fr" placeholder="Boissons Chaudes"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Icon (emoji)</label><input type="text" id="cat-icon" placeholder="☕" maxlength="4"></div>
+        <div class="form-group"><label>Sort Order</label><input type="number" id="cat-order" placeholder="0"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('cat-modal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveCat()">Save Category</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let token = localStorage.getItem('doncafe_token') || '';
+let categories = [], items = [];
+
+// ── AUTH ──
+async function doLogin() {
+  const u = document.getElementById('login-user').value;
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-err');
+  err.style.display = 'none';
+  try {
+    const r = await fetch('/api/auth/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    const d = await r.json();
+    if (d.token) {
+      token = d.token;
+      localStorage.setItem('doncafe_token', token);
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app').classList.add('visible');
+      document.getElementById('sidebar-user').textContent = d.username;
+      await loadAll();
+    } else {
+      err.style.display = 'block';
+    }
+  } catch(e) { err.style.display='block'; }
+}
+
+function doLogout() {
+  localStorage.removeItem('doncafe_token');
+  token = '';
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').classList.remove('visible');
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+
+// ── API HELPERS ──
+async function api(method, url, body) {
+  const opts = {method, headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}};
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  if (r.status === 401) { doLogout(); return null; }
+  return r.json();
+}
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err?' error':'');
+  setTimeout(() => t.className='toast', 2800);
+}
+
+// ── DATA LOAD ──
+async function loadAll() {
+  [categories, items] = await Promise.all([
+    api('GET','/api/admin/categories'),
+    api('GET','/api/admin/items'),
+  ]);
+  const settings = await api('GET','/api/admin/settings');
+  renderDashboard();
+  renderItemsTable();
+  renderCatsTable();
+  populateCatFilter();
+  populateCatSelects();
+  loadAdminQR();
+  if (settings) {
+    document.getElementById('s-name').value = settings.cafe_name||'';
+    document.getElementById('s-tagline').value = settings.cafe_tagline||'';
+    document.getElementById('s-address').value = settings.cafe_address||'';
+    document.getElementById('s-phone').value = settings.cafe_phone||'';
+  }
+}
+
+// ── DASHBOARD ──
+function renderDashboard() {
+  const avail = items.filter(i=>i.available).length;
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${categories.length}</div><div class="stat-label">Categories</div></div>
+    <div class="stat-card"><div class="stat-num">${items.length}</div><div class="stat-label">Total Items</div></div>
+    <div class="stat-card"><div class="stat-num">${avail}</div><div class="stat-label">Available</div></div>
+    <div class="stat-card"><div class="stat-num">${items.length-avail}</div><div class="stat-label">Unavailable</div></div>
+  `;
+  document.getElementById('dash-table').innerHTML = categories.map(cat => {
+    const catItems = items.filter(i=>i.category_id===cat.id);
+    const catAvail = catItems.filter(i=>i.available).length;
+    return `<tr><td>${cat.icon||''} ${cat.name_fr||cat.name}</td><td>${catItems.length}</td><td>${catAvail} / ${catItems.length}</td></tr>`;
+  }).join('');
+}
+
+// ── ITEMS TABLE ──
+function renderItemsTable() {
+  const filterCat = document.getElementById('filter-cat').value;
+  const search = (document.getElementById('filter-search').value||'').toLowerCase();
+  let filtered = items;
+  if (filterCat) filtered = filtered.filter(i=>i.category_id==filterCat);
+  if (search) filtered = filtered.filter(i=>(i.name+i.name_fr+i.description).toLowerCase().includes(search));
+  const catMap = {};
+  categories.forEach(c=>catMap[c.id]=c);
+  document.getElementById('items-table').innerHTML = filtered.map(item => {
+    const cat = catMap[item.category_id];
+    return `<tr>
+      <td style="font-weight:500;color:var(--text)">${item.name}</td>
+      <td><span class="badge badge-cat">${cat?cat.icon+' '+cat.name:item.category_id}</span></td>
+      <td class="price-cell">${Number(item.price).toFixed(3)} TND</td>
+      <td>${item.badge?`<span class="badge" style="background:rgba(184,135,42,.2);color:var(--gold)">${item.badge}</span>`:'-'}</td>
+      <td><span class="badge ${item.available?'badge-avail':'badge-unavail'}">${item.available?'Available':'Unavailable'}</span></td>
+      <td><div class="actions">
+        <button class="btn btn-ghost btn-sm" onclick="openItemModal(${item.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem(${item.id})">Del</button>
+      </div></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px">No items found</td></tr>';
+}
+
+function populateCatFilter() {
+  const sel = document.getElementById('filter-cat');
+  sel.innerHTML = '<option value="">All Categories</option>' +
+    categories.map(c=>`<option value="${c.id}">${c.name_fr||c.name}</option>`).join('');
+}
+
+function populateCatSelects() {
+  const sel = document.getElementById('item-cat');
+  sel.innerHTML = categories.map(c=>`<option value="${c.id}">${c.icon||''} ${c.name_fr||c.name}</option>`).join('');
+}
+
+// ── ITEM MODAL ──
+function openItemModal(id) {
+  const modal = document.getElementById('item-modal');
+  if (id) {
+    const item = items.find(i=>i.id===id);
+    if (!item) return;
+    document.getElementById('item-modal-title').textContent = 'Edit Item';
+    document.getElementById('item-id').value = id;
+    document.getElementById('item-name').value = item.name;
+    document.getElementById('item-name-fr').value = item.name_fr||'';
+    document.getElementById('item-name-ar').value = item.name_ar||'';
+    document.getElementById('item-cat').value = item.category_id;
+    document.getElementById('item-desc').value = item.description||'';
+    document.getElementById('item-price').value = item.price;
+    document.getElementById('item-badge').value = item.badge||'';
+    document.getElementById('item-order').value = item.sort_order||0;
+    const tog = document.getElementById('item-avail-toggle');
+    tog.className = 'toggle' + (item.available?' on':'');
+  } else {
+    document.getElementById('item-modal-title').textContent = 'Add Item';
+    document.getElementById('item-id').value = '';
+    ['item-name','item-name-fr','item-name-ar','item-desc','item-price'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('item-badge').value='';
+    document.getElementById('item-order').value='0';
+    document.getElementById('item-avail-toggle').className='toggle on';
+  }
+  populateCatSelects();
+  if (id) { const item=items.find(i=>i.id===id); if(item) document.getElementById('item-cat').value=item.category_id; }
+  modal.classList.add('open');
+}
+
+async function saveItem() {
+  const id = document.getElementById('item-id').value;
+  const body = {
+    category_id: parseInt(document.getElementById('item-cat').value),
+    name: document.getElementById('item-name').value.trim(),
+    name_fr: document.getElementById('item-name-fr').value.trim(),
+    name_ar: document.getElementById('item-name-ar').value.trim(),
+    description: document.getElementById('item-desc').value.trim(),
+    price: parseFloat(document.getElementById('item-price').value)||0,
+    badge: document.getElementById('item-badge').value||null,
+    sort_order: parseInt(document.getElementById('item-order').value)||0,
+    available: document.getElementById('item-avail-toggle').classList.contains('on') ? 1 : 0,
+  };
+  if (!body.name) return showToast('Name is required', true);
+  if (id) {
+    await api('PUT', `/api/admin/items/${id}`, body);
+    showToast('Item updated!');
+  } else {
+    await api('POST', '/api/admin/items', body);
+    showToast('Item added!');
+  }
+  closeModal('item-modal');
+  items = await api('GET','/api/admin/items');
+  renderItemsTable();
+  renderDashboard();
+}
+
+async function deleteItem(id) {
+  if (!confirm('Delete this item?')) return;
+  await api('DELETE', `/api/admin/items/${id}`);
+  items = await api('GET','/api/admin/items');
+  renderItemsTable();
+  renderDashboard();
+  showToast('Item deleted');
+}
+
+// ── CATEGORIES ──
+function renderCatsTable() {
+  document.getElementById('cats-table').innerHTML = categories.map(cat => {
+    const count = items.filter(i=>i.category_id===cat.id).length;
+    return `<tr>
+      <td style="font-size:22px">${cat.icon||'🍽'}</td>
+      <td style="font-weight:500;color:var(--text)">${cat.name}</td>
+      <td style="color:var(--text2)">${cat.name_fr||'-'}</td>
+      <td>${cat.sort_order}</td>
+      <td><div class="actions">
+        <button class="btn btn-ghost btn-sm" onclick="openCatModal(${cat.id})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCat(${cat.id})" ${count>0?'title="Has '+count+' items"':''}>Del</button>
+      </div></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:24px">No categories</td></tr>';
+}
+
+function openCatModal(id) {
+  const modal = document.getElementById('cat-modal');
+  if (id) {
+    const cat = categories.find(c=>c.id===id);
+    if (!cat) return;
+    document.getElementById('cat-modal-title').textContent = 'Edit Category';
+    document.getElementById('cat-id').value = id;
+    document.getElementById('cat-name').value = cat.name;
+    document.getElementById('cat-name-fr').value = cat.name_fr||'';
+    document.getElementById('cat-icon').value = cat.icon||'';
+    document.getElementById('cat-order').value = cat.sort_order||0;
+  } else {
+    document.getElementById('cat-modal-title').textContent = 'Add Category';
+    document.getElementById('cat-id').value = '';
+    ['cat-name','cat-name-fr','cat-icon'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('cat-order').value='0';
+  }
+  modal.classList.add('open');
+}
+
+async function saveCat() {
+  const id = document.getElementById('cat-id').value;
+  const body = {
+    name: document.getElementById('cat-name').value.trim(),
+    name_fr: document.getElementById('cat-name-fr').value.trim(),
+    icon: document.getElementById('cat-icon').value.trim()||'🍽',
+    sort_order: parseInt(document.getElementById('cat-order').value)||0,
+  };
+  if (!body.name) return showToast('Name is required', true);
+  if (id) { await api('PUT',`/api/admin/categories/${id}`,body); showToast('Category updated!'); }
+  else { await api('POST','/api/admin/categories',body); showToast('Category added!'); }
+  closeModal('cat-modal');
+  categories = await api('GET','/api/admin/categories');
+  renderCatsTable();
+  populateCatFilter();
+  renderDashboard();
+}
+
+async function deleteCat(id) {
+  const count = items.filter(i=>i.category_id===id).length;
+  if (!confirm(`Delete this category?${count>0?' This will also delete '+count+' items!':''}`)) return;
+  await api('DELETE',`/api/admin/categories/${id}`);
+  [categories, items] = await Promise.all([api('GET','/api/admin/categories'),api('GET','/api/admin/items')]);
+  renderCatsTable(); renderItemsTable(); renderDashboard(); populateCatFilter();
+  showToast('Category deleted');
+}
+
+// ── SETTINGS ──
+async function saveSettings() {
+  await api('PUT','/api/admin/settings',{
+    cafe_name: document.getElementById('s-name').value,
+    cafe_tagline: document.getElementById('s-tagline').value,
+    cafe_address: document.getElementById('s-address').value,
+    cafe_phone: document.getElementById('s-phone').value,
+  });
+  showToast('Settings saved!');
+}
+
+async function changePassword() {
+  const p1 = document.getElementById('s-newpass').value;
+  const p2 = document.getElementById('s-confirmpass').value;
+  if (!p1) return showToast('Enter a password', true);
+  if (p1 !== p2) return showToast('Passwords do not match', true);
+  await api('POST','/api/admin/change-password',{password:p1});
+  document.getElementById('s-newpass').value='';
+  document.getElementById('s-confirmpass').value='';
+  showToast('Password changed! Please log in again.');
+  setTimeout(doLogout, 2000);
+}
+
+// ── QR ──
+async function loadAdminQR() {
+  const url = window.location.origin + '/';
+  document.getElementById('admin-qr-url').textContent = url;
+  document.getElementById('qr-menu-url').textContent = url;
+  try {
+    const r = await fetch('/api/qr');
+    const svg = await r.text();
+    document.getElementById('admin-qr-frame').innerHTML = svg;
+    const el = document.getElementById('admin-qr-frame').querySelector('svg');
+    if (el) { el.style.width='168px'; el.style.height='168px'; }
+  } catch(e) {}
+}
+
+function downloadQR() {
+  const svg = document.getElementById('admin-qr-frame').querySelector('svg');
+  if (!svg) return;
+  const blob = new Blob([svg.outerHTML], {type:'image/svg+xml'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='doncafe-qr.svg'; a.click();
+}
+
+function copyURL() {
+  navigator.clipboard.writeText(window.location.origin + '/').then(()=>showToast('URL copied!'));
+}
+
+// ── MODAL ──
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ── PAGES ──
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('visible'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('visible');
+  el.classList.add('active');
+}
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  if (token) {
+    // Verify token is still valid
+    fetch('/api/admin/categories',{headers:{'Authorization':'Bearer '+token}})
+      .then(r => {
+        if (r.ok) {
+          document.getElementById('login-screen').classList.add('hidden');
+          document.getElementById('app').classList.add('visible');
+          loadAll();
+        }
+      }).catch(()=>{});
+  }
+});
+</script>
+</body>
+</html>

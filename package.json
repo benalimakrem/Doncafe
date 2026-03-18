@@ -1,0 +1,11 @@
+{
+  "name": "doncafe",
+  "version": "1.0.0",
+  "description": "Don Cafe - Full Stack Digital Menu System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": { "node": ">=22.0.0" }
+}

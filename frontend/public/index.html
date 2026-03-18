@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#2E1B0E">
+<title>Don Café — Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#F7F1E8;--parchment:#EDE4D3;--latte:#C9A97A;
+  --espresso:#4A2C1A;--mocha:#7A4A2A;--roast:#2E1B0E;
+  --foam:#FBF7F0;--gold:#B8872A;--border:rgba(74,44,26,0.15);
+  --red:#c0392b;
+}
+body{
+  background:var(--cream);color:var(--espresso);
+  font-family:'Jost',sans-serif;font-weight:300;min-height:100vh;
+  background-image:radial-gradient(ellipse at 20% 0%,rgba(201,169,122,.18) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 100%,rgba(122,74,42,.12) 0%,transparent 55%);
+}
+/* ── LOADER ── */
+#loader{position:fixed;inset:0;background:var(--roast);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity .5s}
+#loader.out{opacity:0;pointer-events:none}
+.loader-logo{font-family:'Cormorant Garamond',serif;font-size:42px;color:var(--latte);letter-spacing:.15em;margin-bottom:8px}
+.loader-sub{font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:rgba(201,169,122,.5)}
+.loader-bar{width:80px;height:1px;background:rgba(201,169,122,.2);margin-top:24px;overflow:hidden}
+.loader-fill{height:100%;background:var(--latte);animation:fillbar 1s ease forwards}
+@keyframes fillbar{from{width:0}to{width:100%}}
+
+/* ── WRAPPER ── */
+.wrapper{max-width:680px;margin:0 auto;padding:0 0 60px}
+
+/* ── HEADER ── */
+.header{text-align:center;padding:52px 24px 32px;border-bottom:1px solid var(--border)}
+.ornament{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px}
+.ornament-line{flex:1;max-width:80px;height:1px;background:linear-gradient(to right,transparent,var(--latte))}
+.ornament-line.r{background:linear-gradient(to left,transparent,var(--latte))}
+.ornament-dot{width:5px;height:5px;border-radius:50%;background:var(--latte)}
+.logo-icon{width:52px;height:52px;margin:0 auto 14px}
+.logo-title{font-family:'Cormorant Garamond',serif;font-size:clamp(42px,10vw,62px);font-weight:300;letter-spacing:.12em;color:var(--roast);line-height:1}
+.logo-sub{font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:var(--latte);margin-top:8px;font-weight:400}
+.tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--mocha);margin-top:14px;opacity:.8}
+
+/* ── NAV ── */
+.nav-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:var(--foam);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;box-shadow:0 2px 12px rgba(46,27,14,.06)}
+.nav-wrap::-webkit-scrollbar{display:none}
+.nav-tabs{display:flex;min-width:max-content;padding:0 12px}
+.nav-tab{padding:14px 16px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:400;color:var(--mocha);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .2s,border-color .2s;user-select:none}
+.nav-tab:hover{color:var(--espresso)}
+.nav-tab.active{color:var(--roast);border-bottom-color:var(--gold);font-weight:500}
+
+/* ── SECTIONS ── */
+.section{padding:36px 24px 0;display:none}
+.section.visible{display:block}
+.section-header{display:flex;align-items:center;gap:14px;margin-bottom:26px}
+.section-icon{width:40px;height:40px;border-radius:50%;background:var(--parchment);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:400;color:var(--roast);letter-spacing:.02em}
+.section-divider{flex:1;height:1px;background:var(--border)}
+
+/* ── ITEMS ── */
+.menu-item{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:16px 0;border-bottom:1px solid var(--border);animation:fadeUp .3s ease both;opacity:1}
+.menu-item:last-child{border-bottom:none}
+.menu-item.unavailable{opacity:.4}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.item-left{display:flex;gap:12px;align-items:flex-start;flex:1}
+.item-emoji{font-size:20px;line-height:1;margin-top:2px;flex-shrink:0;width:26px;text-align:center}
+.item-info{flex:1}
+.item-name{font-size:15px;font-weight:400;color:var(--roast);line-height:1.3}
+.item-name-fr{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--mocha);opacity:.75;margin-top:2px}
+.item-desc{font-size:12px;color:var(--mocha);margin-top:4px;line-height:1.5;opacity:.8}
+.item-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.item-price{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--gold);white-space:nowrap}
+.item-price span{font-size:10px;font-family:'Jost',sans-serif;font-weight:400;color:var(--mocha);opacity:.7}
+.badge{display:inline-block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;background:var(--latte);color:var(--foam);padding:2px 7px;border-radius:20px;font-weight:500}
+.badge-sig{background:var(--gold)}
+.badge-sp{background:var(--mocha)}
+.unavailable-tag{font-size:9px;color:var(--red);letter-spacing:.05em;text-transform:uppercase}
+
+/* ── QR SECTION ── */
+.qr-section{margin:44px 24px 0;padding:26px;background:var(--parchment);border-radius:16px;border:1px solid var(--border);display:flex;gap:22px;align-items:center}
+.qr-frame{background:#fff;border-radius:8px;border:1px solid var(--border);padding:6px;flex-shrink:0;width:96px;height:96px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.qr-frame img,.qr-frame svg{width:84px;height:84px}
+.qr-text h4{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:var(--roast);margin-bottom:4px}
+.qr-text p{font-size:12px;color:var(--mocha);line-height:1.6}
+.qr-text small{font-size:10px;color:var(--latte);letter-spacing:.05em;display:block;margin-top:6px}
+
+/* ── FOOTER ── */
+.footer{text-align:center;padding:40px 24px 0;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--latte)}
+.footer-orn{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px}
+.footer-orn::before,.footer-orn::after{content:'';width:50px;height:1px;background:var(--border)}
+
+/* ── EMPTY STATE ── */
+.empty{padding:40px;text-align:center;color:var(--mocha);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;opacity:.6}
+
+@media(max-width:480px){
+  .header{padding:36px 16px 24px}
+  .section{padding:28px 16px 0}
+  .qr-section{flex-direction:column;text-align:center;align-items:center}
+  .nav-tab{padding:12px 13px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-logo">Don Café</div>
+  <div class="loader-sub">Tunis · Since 2015</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<div class="wrapper" id="app" style="opacity:0;transition:opacity .4s">
+
+  <header class="header">
+    <div class="ornament">
+      <div class="ornament-line"></div>
+      <div class="ornament-dot"></div><div class="ornament-dot"></div><div class="ornament-dot"></div>
+      <div class="ornament-line r"></div>
+    </div>
+    <svg class="logo-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="28" cy="28" r="27" fill="#EDE4D3" stroke="#C9A97A" stroke-width="1"/>
+      <path d="M15 22h22l-2.5 14a3 3 0 01-2.96 2.5H18.46A3 3 0 0115.5 36L15 22z" fill="#C9A97A" opacity=".5"/>
+      <path d="M15 22h22l-2.5 14a3 3 0 01-2.96 2.5H18.46A3 3 0 0115.5 36L15 22z" stroke="#7A4A2A" stroke-width="1.2" fill="none"/>
+      <path d="M37 26h1.5a3.5 3.5 0 010 7H37" stroke="#7A4A2A" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M14 22h24" stroke="#7A4A2A" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M22 18c0-2 2-2 2-4M27 17c0-2 2-2 2-4" stroke="#7A4A2A" stroke-width="1.1" stroke-linecap="round" opacity=".55"/>
+    </svg>
+    <h1 class="logo-title" id="hdr-name">Don Café</h1>
+    <p class="logo-sub" id="hdr-address">Tunis · Depuis 2015</p>
+    <p class="tagline" id="hdr-tagline">L'art du café, le goût de chez nous</p>
+  </header>
+
+  <nav class="nav-wrap"><div class="nav-tabs" id="nav-tabs"></div></nav>
+
+  <div id="sections-container"></div>
+
+  <div class="qr-section">
+    <div class="qr-frame" id="qr-container">
+      <svg viewBox="0 0 84 84" xmlns="http://www.w3.org/2000/svg"><rect width="84" height="84" fill="#f5f5f5" rx="4"/><text x="42" y="46" text-anchor="middle" fill="#ccc" font-size="10">Loading…</text></svg>
+    </div>
+    <div class="qr-text">
+      <h4>Accédez au menu</h4>
+      <p>Scannez ce code QR pour ouvrir le menu en ligne sur votre téléphone.</p>
+      <small id="qr-url">chargement…</small>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-orn" id="footer-name">Don Café</div>
+    <p id="footer-addr"></p>
+    <p style="margin-top:6px;opacity:.6">Les prix s'entendent TTC · Menu susceptible de changer</p>
+  </footer>
+</div>
+
+<script>
+const EMOJI_MAP = {
+  'Hot Drinks':'☕','Cold Drinks':'🧊','Breakfast':'🥐',
+  'Tunisian Food':'🍽','Desserts':'🍰'
+};
+const ITEM_EMOJI = {
+  'Espresso':'🫘','Café Express':'☕','Cappuccino':'🫧','Latte':'🥛',
+  'Turkish Coffee':'🫖','Hot Chocolate':'🍫','Mint Tea':'🌿',
+  'Iced Coffee':'🧊','Iced Latte':'🥛','Fresh Orange Juice':'🍊',
+  'Lemon Mint Juice':'🍋','Soda':'🥤',
+  'Croissant':'🥐','Baguette Butter & Jam':'🥖','Omelette':'🍳','Tunisian Breakfast Plate':'🫙',
+  'Lablabi':'🫘','Shakshouka':'🍳','Ojja':'🥚','Sandwich Escalope':'🥙','Chapati Mahdia':'🫓',
+  'Mille-feuille':'🍮','Tiramisu':'☕','Chocolate Cake':'🍫','Bambalouni':'🍩'
+};
+const BADGE_CLASS = {'Popular':'','Maison':'badge-sp','Signature':'badge-sig','Spécial':'badge-sp'};
+
+let allCategories = [], allItems = [];
+let activeSection = 0;
+
+async function loadMenu() {
+  try {
+    const res = await fetch('/api/menu');
+    const data = await res.json();
+    allCategories = data.categories;
+    allItems = data.items;
+    // Update header
+    if (data.settings.cafe_name) document.getElementById('hdr-name').textContent = data.settings.cafe_name;
+    if (data.settings.cafe_tagline) document.getElementById('hdr-tagline').textContent = data.settings.cafe_tagline;
+    if (data.settings.cafe_address) {
+      document.getElementById('hdr-address').textContent = data.settings.cafe_address;
+      document.getElementById('footer-addr').textContent = data.settings.cafe_address + (data.settings.cafe_phone ? ' · ' + data.settings.cafe_phone : '');
+      document.getElementById('footer-name').textContent = data.settings.cafe_name || 'Don Café';
+    }
+    renderNav();
+    renderSections();
+    loadQR();
+  } catch(e) { console.error(e); }
+}
+
+function renderNav() {
+  const nav = document.getElementById('nav-tabs');
+  nav.innerHTML = allCategories.map((cat, i) =>
+    `<div class="nav-tab${i===0?' active':''}" onclick="switchSection(${i},this)">${cat.icon||'🍽'} ${cat.name_fr||cat.name}</div>`
+  ).join('');
+}
+
+function renderSections() {
+  const container = document.getElementById('sections-container');
+  container.innerHTML = allCategories.map((cat, ci) => {
+    const items = allItems.filter(it => it.category_id === cat.id);
+    const itemsHTML = items.length ? items.map((item, ii) => {
+      const emoji = ITEM_EMOJI[item.name] || cat.icon || '🍽';
+      const badgeClass = BADGE_CLASS[item.badge] || '';
+      const badgeHTML = item.badge ? `<span class="badge ${badgeClass}">${item.badge}</span>` : '';
+      const unavailHTML = !item.available ? `<span class="unavailable-tag">Indisponible</span>` : '';
+      return `<div class="menu-item${!item.available?' unavailable':''}" style="animation-delay:${ii*0.05}s">
+        <div class="item-left">
+          <div class="item-emoji">${emoji}</div>
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            ${item.name_fr?`<div class="item-name-fr">${item.name_fr}</div>`:''}
+            ${item.name_ar?`<div class="item-name-fr" style="font-style:normal;direction:rtl">${item.name_ar}</div>`:''}
+            ${item.description?`<div class="item-desc">${item.description}</div>`:''}
+          </div>
+        </div>
+        <div class="item-right">
+          <div class="item-price">${Number(item.price).toFixed(3)} <span>TND</span></div>
+          ${badgeHTML}${unavailHTML}
+        </div>
+      </div>`;
+    }).join('') : `<div class="empty">Aucun article disponible</div>`;
+    return `<section class="section${ci===0?' visible':''}" id="sec-${ci}">
+      <div class="section-header">
+        <div class="section-icon">${cat.icon||'🍽'}</div>
+        <h2 class="section-title">${cat.name_fr||cat.name}</h2>
+        <div class="section-divider"></div>
+      </div>
+      ${itemsHTML}
+    </section>`;
+  }).join('');
+}
+
+function switchSection(idx, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const sec = document.getElementById(`sec-${idx}`);
+  if (sec) { sec.classList.add('visible'); sec.querySelectorAll('.menu-item').forEach((m,i)=>{m.style.animationDelay=i*0.05+'s'}); }
+  el.classList.add('active');
+  el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  activeSection = idx;
+}
+
+async function loadQR() {
+  try {
+    const host = window.location.host;
+    const url = window.location.origin + '/';
+    document.getElementById('qr-url').textContent = url;
+    const res = await fetch('/api/qr');
+    const svgText = await res.text();
+    document.getElementById('qr-container').innerHTML = svgText;
+    // Fix SVG size
+    const svg = document.getElementById('qr-container').querySelector('svg');
+    if (svg) { svg.style.width='84px'; svg.style.height='84px'; }
+  } catch(e) {}
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const loader = document.getElementById('loader');
+    loader.classList.add('out');
+    setTimeout(() => { loader.style.display='none'; },600);
+    document.getElementById('app').style.opacity='1';
+  }, 1100);
+  loadMenu();
+});
+</script>
+</body>
+</html>
