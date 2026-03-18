@@ -253,9 +253,7 @@ async function handleRequest(req, res) {
   }
 
   if (p === '/api/qr' && method === 'GET') {
-    const host = req.headers['x-forwarded-host'] || req.headers.host || (LOCAL_IP + ':' + PORT);
-    const proto = req.headers['x-forwarded-proto'] || 'http';
-    const menuUrl = proto + '://' + host + '/';
+    const menuUrl = 'https://doncafe-production.up.railway.app/';
     const svg = generateQRSVG(menuUrl);
     res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Access-Control-Allow-Origin': '*' });
     return res.end(svg);
